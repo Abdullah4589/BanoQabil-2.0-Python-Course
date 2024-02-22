@@ -54,7 +54,7 @@ The graphical user interface is styled using the ttkthemes library, offering a v
 
 ![image](https://github.com/Abdullah4589/BanoQabil-2.0-Python-Course/assets/150226902/8ab79bde-04eb-48db-a01a-be2307d4c886)
 
-Note: Balance will be updated when user will login agian.
+Note: Balance will be updated when user will login again.
 
 ![image](https://github.com/Abdullah4589/BanoQabil-2.0-Python-Course/assets/150226902/2b4b6061-3e7a-4656-b96f-2d2bc038fa96)
 
