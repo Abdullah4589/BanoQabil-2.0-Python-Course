@@ -3,6 +3,7 @@ from tkinter import Tk, Label, Entry, Button, messagebox
 from tkinter import ttk
 from ttkthemes import ThemedStyle
 from datetime import datetime
+import tkinter as tk  # Import the tk module for StringVar
 
 # Database initialization
 conn = sqlite3.connect('ExpenseEase_new.db')
@@ -81,8 +82,13 @@ def open_dashboard(username, balance):
         dashboard_root.destroy()
         show_login_screen()
 
-    welcome_label = ttk.Label(dashboard_root, text=f"Welcome, {username}!\nBalance: ${balance}", font=("Helvetica", 14))
+    welcome_label = ttk.Label(dashboard_root, text=f"Welcome, {username}!", font=("Helvetica", 14))
     welcome_label.pack(pady=10)
+
+    # Use StringVar to dynamically update the balance label
+    balance_var = tk.StringVar(value=f"${balance}")
+    balance_label = ttk.Label(dashboard_root, textvariable=balance_var, font=("Helvetica", 14))
+    balance_label.pack(pady=10)
 
     add_money_label = ttk.Label(dashboard_root, text="Add Money:", font=("Helvetica", 12))
     add_money_label.pack(pady=5)
@@ -102,13 +108,13 @@ def open_dashboard(username, balance):
     send_to_entry = ttk.Entry(dashboard_root, width=30)
     send_to_entry.pack(pady=5)
 
-    add_money_button = ttk.Button(dashboard_root, text="Add Money", command=lambda: add_money(username, float(add_money_entry.get())))
+    add_money_button = ttk.Button(dashboard_root, text="Add Money", command=lambda: add_money(username, float(add_money_entry.get()), balance_var))
     add_money_button.pack(pady=5)
 
-    withdraw_money_button = ttk.Button(dashboard_root, text="Withdraw Money", command=lambda: withdraw_money(username, float(withdraw_money_entry.get())))
+    withdraw_money_button = ttk.Button(dashboard_root, text="Withdraw Money", command=lambda: withdraw_money(username, float(withdraw_money_entry.get()), balance_var))
     withdraw_money_button.pack(pady=5)
 
-    send_money_button = ttk.Button(dashboard_root, text="Send Money", command=lambda: send_money(username, send_to_entry.get(), float(withdraw_money_entry.get())))
+    send_money_button = ttk.Button(dashboard_root, text="Send Money", command=lambda: send_money(username, send_to_entry.get(), float(withdraw_money_entry.get()), balance_var))
     send_money_button.pack(pady=5)
 
     logout_button = ttk.Button(dashboard_root, text="Logout", command=logout)
@@ -116,7 +122,7 @@ def open_dashboard(username, balance):
 
     dashboard_root.mainloop()
 
-def add_money(username, amount):
+def add_money(username, amount, balance_var):
     cursor.execute("SELECT balance FROM users WHERE username=?", (username,))
     current_balance = cursor.fetchone()[0]
 
@@ -127,7 +133,10 @@ def add_money(username, amount):
     log_transaction("addition", amount)
     messagebox.showinfo("Success", f"${amount} added successfully. New balance: ${new_balance}")
 
-def withdraw_money(username, amount):
+    # Update the balance label on the dashboard
+    balance_var.set(f"${new_balance}")
+
+def withdraw_money(username, amount, balance_var):
     cursor.execute("SELECT balance FROM users WHERE username=?", (username,))
     current_balance = cursor.fetchone()[0]
 
@@ -138,10 +147,13 @@ def withdraw_money(username, amount):
 
         log_transaction("withdrawal", amount)
         messagebox.showinfo("Success", f"${amount} withdrawn successfully. New balance: ${new_balance}")
+
+        # Update the balance label on the dashboard
+        balance_var.set(f"${new_balance}")
     else:
         messagebox.showerror("Error", "Insufficient balance.")
 
-def send_money(sender_username, receiver_username, amount):
+def send_money(sender_username, receiver_username, amount, balance_var):
     cursor.execute("SELECT balance FROM users WHERE username=?", (sender_username,))
     sender_balance = cursor.fetchone()[0]
 
@@ -158,6 +170,9 @@ def send_money(sender_username, receiver_username, amount):
 
         log_transaction("transfer", amount, sender_username, receiver_username)
         messagebox.showinfo("Success", f"${amount} sent to {receiver_username}. New balance: ${new_sender_balance}")
+
+        # Update the balance label on the dashboard
+        balance_var.set(f"${new_sender_balance}")
     else:
         messagebox.showerror("Error", "Insufficient balance to send money.")
 
